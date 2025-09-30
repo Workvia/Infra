@@ -1,10 +1,10 @@
-import { authkitMiddleware } from "@workos-inc/authkit-nextjs";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default authkitMiddleware({
-  redirectUri: process.env.WORKOS_REDIRECT_URI || "http://localhost:3000/auth/callback",
-  signInPath: "/auth/signin",
-  signOutPath: "/auth/signout",
-});
+// Temporarily disabled auth - passthrough middleware
+export function middleware(request: NextRequest) {
+  return NextResponse.next();
+}
 
 // Configure which routes require authentication
 export const config = {
@@ -20,3 +20,14 @@ export const config = {
     "/((?!api/auth|_next/static|_next/image|favicon.ico|public).*)",
   ],
 };
+
+/*
+// Original WorkOS auth configuration (uncomment to re-enable):
+import { authkitMiddleware } from "@workos-inc/authkit-nextjs";
+
+export default authkitMiddleware({
+  redirectUri: process.env.WORKOS_REDIRECT_URI || "http://localhost:3000/auth/callback",
+  signInPath: "/auth/signin",
+  signOutPath: "/auth/signout",
+});
+*/
