@@ -460,7 +460,7 @@ export const PromptInput = ({
       />
       <form
         className={cn(
-          "w-full divide-y overflow-hidden rounded-xl border bg-background shadow-sm",
+          "w-full overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm",
           className
         )}
         onSubmit={handleSubmit}
@@ -539,10 +539,10 @@ export const PromptInputTextarea = ({
   return (
     <Textarea
       className={cn(
-        "w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0",
-        "field-sizing-content bg-transparent dark:bg-transparent",
-        "max-h-48 min-h-16",
-        "focus-visible:ring-0",
+        "w-full resize-none rounded-none border-none px-4 pt-4 pb-2 shadow-none outline-none ring-0",
+        "field-sizing-content bg-transparent text-foreground placeholder:text-muted-foreground",
+        "max-h-48 min-h-[56px]",
+        "focus-visible:ring-0 text-[15px]",
         className
       )}
       name="message"
@@ -564,7 +564,7 @@ export const PromptInputToolbar = ({
   ...props
 }: PromptInputToolbarProps) => (
   <div
-    className={cn("flex items-center justify-between p-1", className)}
+    className={cn("flex items-center justify-between px-3 pb-3 pt-1", className)}
     {...props}
   />
 );
@@ -577,8 +577,7 @@ export const PromptInputTools = ({
 }: PromptInputToolsProps) => (
   <div
     className={cn(
-      "flex items-center gap-1",
-      "[&_button:first-child]:rounded-bl-xl",
+      "flex items-center gap-2",
       className
     )}
     {...props}
@@ -590,21 +589,17 @@ export type PromptInputButtonProps = ComponentProps<typeof Button>;
 export const PromptInputButton = ({
   variant = "ghost",
   className,
-  size,
+  size = "sm",
   ...props
 }: PromptInputButtonProps) => {
-  const newSize =
-    (size ?? Children.count(props.children) > 1) ? "default" : "icon";
-
   return (
     <Button
       className={cn(
-        "shrink-0 gap-1.5 rounded-lg",
-        variant === "ghost" && "text-muted-foreground",
-        newSize === "default" && "px-3",
+        "shrink-0 gap-2 rounded-xl h-9 px-3 text-sm font-medium",
+        "bg-muted hover:bg-muted/80 text-foreground border-0",
         className
       )}
-      size={newSize}
+      size={size}
       type="button"
       variant={variant}
       {...props}
@@ -662,7 +657,7 @@ export type PromptInputSubmitProps = ComponentProps<typeof Button> & {
 export const PromptInputSubmit = ({
   className,
   variant = "default",
-  size = "icon",
+  size = "sm",
   status,
   children,
   ...props
@@ -680,13 +675,13 @@ export const PromptInputSubmit = ({
   return (
     <Button
       aria-label="Submit"
-      className={cn("gap-1.5 rounded-lg", className)}
+      className={cn("gap-1.5 rounded-xl h-9 px-5 text-sm font-medium bg-primary hover:bg-primary/90 text-primary-foreground", className)}
       size={size}
       type="submit"
       variant={variant}
       {...props}
     >
-      {children ?? Icon}
+      {children ?? "Send"}
     </Button>
   );
 };

@@ -1,8 +1,13 @@
 import { authkitMiddleware } from "@workos-inc/authkit-nextjs";
 
-export default authkitMiddleware();
+export default authkitMiddleware({
+  debug: true,
+  middlewareAuth: {
+    enabled: true,
+    unauthenticatedPaths: ["/api/auth"],
+  },
+});
 
-// Match all routes except static files and images
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico).*)",
