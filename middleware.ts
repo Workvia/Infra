@@ -1,7 +1,6 @@
 import { authkitMiddleware } from "@workos-inc/authkit-nextjs";
 
 export default authkitMiddleware({
-  // Optional: Customize redirect paths
   signInPath: "/auth/signin",
   signOutPath: "/auth/signout",
 });
