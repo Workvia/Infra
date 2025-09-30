@@ -1,14 +1,41 @@
 "use client";
 
 import * as React from "react";
-import { useChat } from "ai/react";
-import { Search, Send, Paperclip, ChevronDown } from "lucide-react";
+import { Search, Globe, Grid3x3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+  PromptInputButton,
+  PromptInputSubmit,
+  PromptInputAttachments,
+  PromptInputAttachment,
+  PromptInputActionMenu,
+  PromptInputActionMenuTrigger,
+  PromptInputActionMenuContent,
+  PromptInputActionMenuItem,
+  type PromptInputMessage,
+} from "@/components/ai-elements/prompt-input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
+
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+};
 
 // Mock previous chats
 const previousChats = [
@@ -49,18 +76,54 @@ export default function AssistantPage() {
   const [appsIntegrations, setAppsIntegrations] = React.useState(true);
   const [selectedClients, setSelectedClients] = React.useState<string[]>([]);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [showSources, setShowSources] = React.useState(false);
+  const [messages, setMessages] = React.useState<Message[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: "/api/chat",
-    body: {
-      clientId: selectedClients[0], // Use first selected client
-      sources: {
-        webSearch,
-        appsIntegrations,
-      },
-    },
-  });
+  const handleSubmit = async (message: PromptInputMessage) => {
+    if (!message.text?.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: message.text,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+          clientId: selectedClients[0],
+          sources: { webSearch, appsIntegrations },
+          files: message.files,
+        }),
+      });
+
+      const data = await response.json();
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: data.message || data.response || "I received your message.",
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error("Chat error:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Sorry, I encountered an error. Please try again.",
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredClients = clients.filter((client) =>
     client.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -214,153 +277,111 @@ export default function AssistantPage() {
 
         {/* Input Area */}
         <div className="border-t bg-background">
-          <div className="max-w-3xl mx-auto p-6 space-y-4">
-            {/* Sources Panel */}
-            {showSources && (
-              <div className="rounded-lg border bg-card p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Sources</h3>
-                </div>
+          <div className="max-w-3xl mx-auto p-4">
+            <PromptInput onSubmit={handleSubmit} accept="image/*" multiple>
+              <PromptInputBody>
+                <PromptInputAttachments>
+                  {(file) => <PromptInputAttachment data={file} />}
+                </PromptInputAttachments>
+                <PromptInputTextarea placeholder="Ask anything" />
+                <PromptInputToolbar>
+                  <PromptInputTools>
+                    <PromptInputActionMenu>
+                      <PromptInputActionMenuTrigger />
+                      <PromptInputActionMenuContent>
+                        <PromptInputActionMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+                            input?.click();
+                          }}
+                        >
+                          Attach files
+                        </PromptInputActionMenuItem>
+                      </PromptInputActionMenuContent>
+                    </PromptInputActionMenu>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="h-4 w-4 text-muted-foreground"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <span className="text-sm">Web search</span>
-                    </div>
-                    <Switch
-                      checked={webSearch}
-                      onCheckedChange={setWebSearch}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <svg
-                        className="h-4 w-4 text-muted-foreground"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                        />
-                      </svg>
-                      <span className="text-sm">Apps and integrations</span>
-                    </div>
-                    <Switch
-                      checked={appsIntegrations}
-                      onCheckedChange={setAppsIntegrations}
-                    />
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="relative mb-3">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search..."
-                      className="pl-9"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-medium text-muted-foreground">Clients</h4>
-                    <div className="space-y-1 max-h-48 overflow-y-auto">
-                      {filteredClients.map((client) => {
-                        const isSelected = selectedClients.includes(client.id);
-                        return (
-                          <button
-                            key={client.id}
-                            className={cn(
-                              "w-full flex items-center gap-2 p-2 rounded-md transition-colors text-left",
-                              isSelected
-                                ? "bg-primary/10 text-primary"
-                                : "hover:bg-accent"
-                            )}
-                            onClick={() => {
-                              setSelectedClients((prev) =>
-                                prev.includes(client.id)
-                                  ? prev.filter((id) => id !== client.id)
-                                  : [...prev, client.id]
-                              );
-                            }}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <PromptInputButton>
+                          <Globe className="size-4" />
+                          Sources
+                        </PromptInputButton>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-80">
+                        <div className="p-2 space-y-2">
+                          <DropdownMenuCheckboxItem
+                            checked={webSearch}
+                            onCheckedChange={setWebSearch}
                           >
-                            <div className="flex h-6 w-6 items-center justify-center rounded bg-muted text-sm">
-                              {client.icon}
-                            </div>
-                            <span className="text-sm flex-1">{client.name}</span>
-                            {isSelected && (
-                              <div className="h-2 w-2 rounded-full bg-primary" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+                            <Globe className="mr-2 h-4 w-4" />
+                            Web search
+                          </DropdownMenuCheckboxItem>
+                          <DropdownMenuCheckboxItem
+                            checked={appsIntegrations}
+                            onCheckedChange={setAppsIntegrations}
+                          >
+                            <Grid3x3 className="mr-2 h-4 w-4" />
+                            Apps and integrations
+                          </DropdownMenuCheckboxItem>
+                        </div>
 
-            {/* Message Input */}
-            <form onSubmit={handleSubmit} className="relative">
-              <Input
-                placeholder="Ask anything"
-                className="pr-32 h-12 rounded-full"
-                value={input}
-                onChange={handleInputChange}
-              />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full"
-                >
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 rounded-full text-xs gap-1"
-                  onClick={() => setShowSources(!showSources)}
-                >
-                  Sources
-                  <ChevronDown
-                    className={cn(
-                      "h-3 w-3 transition-transform",
-                      showSources && "rotate-180"
-                    )}
+                        <div className="border-t p-2">
+                          <div className="relative mb-2">
+                            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Search clients..."
+                              className="pl-8 h-8"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                          </div>
+                          <div className="text-xs font-medium text-muted-foreground mb-2 px-2">
+                            Clients
+                          </div>
+                          <div className="space-y-1 max-h-48 overflow-y-auto">
+                            {filteredClients.map((client) => {
+                              const isSelected = selectedClients.includes(client.id);
+                              return (
+                                <button
+                                  key={client.id}
+                                  className={cn(
+                                    "w-full flex items-center gap-2 p-2 rounded-md transition-colors text-left text-sm",
+                                    isSelected
+                                      ? "bg-primary/10 text-primary"
+                                      : "hover:bg-accent"
+                                  )}
+                                  onClick={() => {
+                                    setSelectedClients((prev) =>
+                                      prev.includes(client.id)
+                                        ? prev.filter((id) => id !== client.id)
+                                        : [...prev, client.id]
+                                    );
+                                  }}
+                                >
+                                  <div className="flex h-6 w-6 items-center justify-center rounded bg-muted text-xs">
+                                    {client.icon}
+                                  </div>
+                                  <span className="flex-1">{client.name}</span>
+                                  {isSelected && (
+                                    <div className="h-2 w-2 rounded-full bg-primary" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </PromptInputTools>
+
+                  <PromptInputSubmit
+                    status={isLoading ? "streaming" : undefined}
+                    disabled={isLoading}
                   />
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-8 rounded-full bg-blue-600 hover:bg-blue-700 px-4"
-                  disabled={!input.trim() || isLoading}
-                >
-                  <Send className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </form>
+                </PromptInputToolbar>
+              </PromptInputBody>
+            </PromptInput>
           </div>
         </div>
       </div>

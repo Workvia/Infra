@@ -151,7 +151,7 @@ const IconShape = ({ color, shape }: { color: string; shape: string }) => {
 
 export default function ClientDetailPage() {
   const params = useParams();
-  const [activeTab, setActiveTab] = React.useState("workflows");
+  const [activeTab, setActiveTab] = React.useState("overview");
 
   return (
     <div className="flex h-full flex-col">
@@ -204,7 +204,7 @@ export default function ClientDetailPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-6 flex gap-8">
         {activeTab === "workflows" && (
           <div className="mx-auto max-w-[1200px]">
             {/* Favorites Section */}
@@ -370,7 +370,7 @@ export default function ClientDetailPage() {
         )}
 
         {activeTab === "overview" && (
-          <div className="mx-auto max-w-[1200px]">
+          <div className="mx-auto max-w-[1200px] flex-1">
             {/* Client Overview Section */}
             <div className="mb-8">
               <div className="mb-2 flex items-center justify-between">
@@ -380,6 +380,85 @@ export default function ClientDetailPage() {
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">A overview of the project, goals and outcomes.</p>
+            </div>
+
+            {/* Workflows Section */}
+            <div className="mb-8">
+              <button className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 8H14M8 2V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                <span>Workflows</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+
+              {/* Workflows Table */}
+              <div className="overflow-hidden rounded-lg border bg-card">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Workflow</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path d="M8 3V13M3 8H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          </svg>
+                          Runs
+                        </div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <rect x="3" y="3" width="10" height="10" rx="1" stroke="currentColor" strokeWidth="1.5" />
+                          </svg>
+                          Status
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {workflows.map((workflow) => (
+                      <tr
+                        key={workflow.id}
+                        className="border-b last:border-0 hover:bg-accent/50 transition-colors"
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`flex h-8 w-8 items-center justify-center rounded-md ${workflow.iconBg}`}>
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M8 3V13M3 8H13" stroke={workflow.iconColor} strokeWidth="1.5" strokeLinecap="round" />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-medium">{workflow.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">{workflow.runs}</td>
+                        <td className="px-4 py-3">
+                          <Badge className={`${workflow.statusColor} border-0`}>{workflow.status}</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* Files Section */}
@@ -478,11 +557,10 @@ export default function ClientDetailPage() {
             </div>
           </div>
         )}
-      </main>
 
-      {/* Right Sidebar - Client Details (only show on overview tab) */}
-      {activeTab === "overview" && (
-        <div className="w-80 border-l bg-muted/5 overflow-auto">
+        {/* Right Sidebar - Client Details (only show on overview tab) */}
+        {activeTab === "overview" && (
+          <div className="w-80 border-l bg-muted/5 overflow-auto">
           <div className="p-6">
             <div className="mb-6 flex items-center gap-4 border-b">
               <button className="border-b-2 border-foreground pb-3 text-sm font-medium">Details</button>
@@ -557,7 +635,8 @@ export default function ClientDetailPage() {
             </div>
           </div>
         </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }
