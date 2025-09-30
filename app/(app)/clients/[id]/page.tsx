@@ -2,22 +2,20 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { Star, MoreVertical, ChevronDown, ChevronRight } from "lucide-react";
+import { Star, MoreVertical, ChevronRight, Plus, Globe, Building2, FileTextIcon as FileText, Users, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import Link from "next/link";
 
-// Mock data - matches design
+// Mock data
 const client = {
   id: "1",
   name: "Stack3d Lab",
   domain: "stack3d.com",
   description: "Stack3d Lab develops, licenses, and supports software and services.",
-  categories: ["Publishing", "SAAS", "Information Technology"],
+  categories: ["Publishing", "SAAS", "Information T"],
   avatar: "S",
-  team: null,
 };
 
 const workflows = [
@@ -26,48 +24,46 @@ const workflows = [
     name: "Proposal Generation",
     runs: 0,
     status: "Completed",
-    statusColor: "bg-green-500/10 text-green-700 dark:text-green-400",
-    icon: "🔮",
+    statusColor: "bg-[#10B981]/20 text-[#10B981] hover:bg-[#10B981]/30",
+    iconBg: "bg-[#8B5CF6]/20",
+    iconColor: "#8B5CF6",
   },
   {
     id: "2",
     name: "Policy Checking",
     runs: 0,
     status: "Pending",
-    statusColor: "bg-purple-500/10 text-purple-700 dark:text-purple-400",
-    icon: "🔍",
-    isFavorite: true,
+    statusColor: "bg-[#8B5CF6]/20 text-[#8B5CF6] hover:bg-[#8B5CF6]/30",
+    iconBg: "bg-[#3B82F6]/20",
+    iconColor: "#3B82F6",
   },
   {
     id: "3",
     name: "Coverage Check",
     runs: 0,
     status: "Draft",
-    statusColor: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-    icon: "✓",
+    statusColor: "bg-[#3B82F6]/20 text-[#3B82F6] hover:bg-[#3B82F6]/30",
+    iconBg: "bg-[#3B82F6]/20",
+    iconColor: "#3B82F6",
   },
   {
     id: "4",
     name: "SOV Builder",
     runs: 0,
     status: "Draft",
-    statusColor: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-    icon: "📊",
-    isFavorite: true,
+    statusColor: "bg-[#3B82F6]/20 text-[#3B82F6] hover:bg-[#3B82F6]/30",
+    iconBg: "bg-[#10B981]/20",
+    iconColor: "#10B981",
   },
   {
     id: "5",
     name: "Submission Intake",
     runs: 0,
     status: "Draft",
-    statusColor: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
-    icon: "📥",
+    statusColor: "bg-[#3B82F6]/20 text-[#3B82F6] hover:bg-[#3B82F6]/30",
+    iconBg: "bg-[#10B981]/20",
+    iconColor: "#10B981",
   },
-];
-
-const favoriteWorkflows = [
-  { name: "Policy Checking", steps: 5, icon: "🔵" },
-  { name: "SOV Builder", steps: 2, icon: "⚪" },
 ];
 
 const files = [
@@ -92,400 +88,326 @@ const activities = [
 
 export default function ClientDetailPage() {
   const params = useParams();
+  const [activeTab, setActiveTab] = React.useState("overview");
 
   return (
-    <div className="flex h-full">
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
-        {/* Header with Avatar and Title */}
-        <div className="border-b">
-          <div className="flex items-center gap-3 px-6 py-4">
-            <Avatar className="h-10 w-10 rounded-lg bg-[#5B5FED]">
-              <AvatarFallback className="rounded-lg bg-[#5B5FED] text-white font-medium">
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <header className="border-b bg-background">
+        <div className="flex items-center justify-between px-6 py-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8 rounded-lg bg-[#4F46E5]">
+              <AvatarFallback className="rounded-lg bg-[#4F46E5] text-white text-sm font-semibold">
                 {client.avatar}
               </AvatarFallback>
             </Avatar>
-            <h1 className="text-xl font-semibold">{client.name}</h1>
-            <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto">
+            <h1 className="text-lg font-semibold">{client.name}</h1>
+            <Button variant="ghost" size="icon" className="h-6 w-6">
               <Star className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Plus className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </div>
+        </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="overview" className="w-full">
-            <div className="px-6">
-              <TabsList className="h-10 bg-transparent border-b-0 p-0 space-x-6">
-                <TabsTrigger
-                  value="overview"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2"
-                >
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger
-                  value="assistant"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2"
-                >
-                  AI Assistant
-                </TabsTrigger>
-                <TabsTrigger
-                  value="workflows"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2"
-                >
-                  Workflows
-                </TabsTrigger>
-                <TabsTrigger
-                  value="files"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2"
-                >
-                  Files
-                </TabsTrigger>
-                <TabsTrigger
-                  value="activity"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2"
-                >
-                  Activity
-                </TabsTrigger>
-              </TabsList>
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-6 px-6">
+          {[
+            { id: "overview", label: "Overview" },
+            { id: "assistant", label: "AI Assistant" },
+            { id: "workflows", label: "Workflows" },
+            { id: "files", label: "Files" },
+            { id: "activity", label: "Activity" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`pb-3 pt-2 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "border-b-2 border-foreground text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto p-6">
+          {/* Client Overview Section */}
+          <div className="mb-8">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Client overview</h2>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
             </div>
+            <p className="text-sm text-muted-foreground">
+              A overview of the project, goals and outcomes.
+            </p>
+          </div>
 
-            <TabsContent value="overview" className="mt-0 p-6 space-y-6">
-              {/* Client Overview Card */}
-              <div className="rounded-lg border bg-card">
-                <div className="p-4 space-y-1">
-                  <h2 className="text-sm font-medium">Client overview</h2>
-                  <p className="text-sm text-muted-foreground">
-                    A overview of the project, goals and outcomes.
-                  </p>
-                </div>
-              </div>
+          {/* Workflows Section */}
+          <div className="mb-8">
+            <button className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M2 8H14M8 2V14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <span>Workflows</span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
 
-              {/* Favorites Section */}
-              <div>
-                <div className="flex items-center gap-1 mb-3">
-                  <h3 className="text-sm font-medium text-muted-foreground">Favorites</h3>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {favoriteWorkflows.map((workflow, index) => (
-                    <div
-                      key={index}
-                      className="rounded-lg border bg-card p-4 hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="flex gap-1">
-                          {Array.from({ length: workflow.steps }).map((_, i) => (
-                            <div
-                              key={i}
-                              className="w-8 h-8 rounded border bg-muted/50 flex items-center justify-center text-xs"
-                            >
-                              {i === 0 ? workflow.icon : "⚪"}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <p className="mt-3 text-sm font-medium">{workflow.name}</p>
-                      <Badge variant="secondary" className="mt-2 bg-blue-500/10 text-blue-700 dark:text-blue-400 border-0">
-                        Draft
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Workflows Section */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">⚙️</span>
-                    <h3 className="text-sm font-medium">Workflows</h3>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </div>
-
-                <div className="rounded-lg border bg-card overflow-hidden">
-                  {/* Table Header */}
-                  <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-muted/30 border-b text-xs text-muted-foreground font-medium">
-                    <div className="col-span-6">Workflow</div>
-                    <div className="col-span-2 text-center">Runs</div>
-                    <div className="col-span-3">Status</div>
-                    <div className="col-span-1"></div>
-                  </div>
-
-                  {/* Workflow Rows */}
+            {/* Workflows Table */}
+            <div className="overflow-hidden rounded-lg border bg-card">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                      Workflow
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                      Runs
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
                   {workflows.map((workflow) => (
-                    <div
-                      key={workflow.id}
-                      className="grid grid-cols-12 gap-4 px-4 py-3 items-center border-b last:border-0 hover:bg-accent/30 transition-colors"
-                    >
-                      <div className="col-span-6 flex items-center gap-2">
-                        <span className="text-lg">{workflow.icon}</span>
-                        <span className="text-sm">{workflow.name}</span>
-                      </div>
-                      <div className="col-span-2 text-center text-sm text-muted-foreground">
-                        {workflow.runs}
-                      </div>
-                      <div className="col-span-3">
-                        <Badge variant="secondary" className={`${workflow.statusColor} border-0`}>
+                    <tr key={workflow.id} className="border-b last:border-0 hover:bg-accent/50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-md ${workflow.iconBg}`}
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 16 16"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M8 3V13M3 8H13"
+                                stroke={workflow.iconColor}
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium">{workflow.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{workflow.runs}</td>
+                      <td className="px-4 py-3">
+                        <Badge className={`${workflow.statusColor} border-0`}>
                           {workflow.status}
                         </Badge>
-                      </div>
-                      <div className="col-span-1 flex justify-end">
-                        {workflow.isFavorite && (
-                          <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                        )}
-                      </div>
-                    </div>
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              </div>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-              {/* Files Section */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">📁</span>
-                    <h3 className="text-sm font-medium">Files</h3>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </div>
+          {/* Files Section */}
+          <div className="mb-8">
+            <button className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <FileText className="h-4 w-4" />
+              <span>Files</span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
 
-                <div className="grid grid-cols-4 gap-3">
-                  <Button
-                    variant="outline"
-                    className="h-24 border-dashed hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="text-2xl">+</div>
+            <div className="grid grid-cols-4 gap-4">
+              {/* Add File Card */}
+              <Card className="flex h-24 items-center justify-center border-2 border-dashed hover:border-muted-foreground hover:bg-accent/50 cursor-pointer bg-transparent">
+                <Plus className="h-6 w-6 text-muted-foreground" />
+              </Card>
+
+              {/* PDF File Cards */}
+              {files.map((file) => (
+                <Card
+                  key={file.id}
+                  className="group relative h-24 bg-card p-3 hover:bg-accent/50 cursor-pointer"
+                >
+                  <div className="flex h-full flex-col justify-between">
+                    <div className="flex items-start gap-2">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded bg-[#DC2626]">
+                        <span className="text-[10px] font-bold text-white">PDF</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-medium">{file.name}</p>
+                      </div>
                     </div>
-                  </Button>
-                  {files.map((file) => (
-                    <div
-                      key={file.id}
-                      className="rounded-lg border bg-card p-3 hover:bg-accent/50 transition-colors flex flex-col items-center gap-2"
+                    <button className="text-left text-xs text-muted-foreground hover:text-foreground">
+                      Download
+                    </button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Activity Section */}
+          <div>
+            <button className="mb-4 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8 3V8L11 11"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+              <span>Activity</span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
+            <div className="space-y-4">
+              {activities.map((activity) => (
+                <div key={activity.id} className="flex items-start gap-3">
+                  <button className="mt-1 text-muted-foreground hover:text-foreground">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
-                      <div className="w-10 h-10 bg-red-500 rounded flex items-center justify-center">
-                        <span className="text-white text-[10px] font-bold">PDF</span>
-                      </div>
-                      <p className="text-xs text-center text-muted-foreground truncate w-full">
-                        {file.name}
-                      </p>
-                      <Button variant="link" size="sm" className="h-auto p-0 text-xs">
-                        Download
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Activity Section */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">📊</span>
-                    <h3 className="text-sm font-medium">Activity</h3>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <Button variant="link" size="sm" className="h-auto p-0 text-xs">
-                    View all
-                    <ChevronDown className="h-3 w-3 ml-1" />
-                  </Button>
-                </div>
-
-                <div className="rounded-lg border bg-card p-4 space-y-4">
-                  {activities.map((activity, index) => (
-                    <div key={activity.id} className="flex gap-3">
-                      <div className="flex flex-col items-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 rounded-full hover:bg-transparent"
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                        {index < activities.length - 1 && (
-                          <div className="w-px flex-1 bg-border mt-1" />
-                        )}
-                      </div>
-                      <div className="flex-1 pt-1">
-                        <p className="text-sm">{activity.action}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {activity.timestamp}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-
-      {/* Right Sidebar - Client Details */}
-      <div className="w-80 border-l bg-muted/5 overflow-auto">
-        <div className="p-6">
-          <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-9">
-              <TabsTrigger value="details" className="text-xs">
-                Details
-              </TabsTrigger>
-              <TabsTrigger value="comments" className="text-xs">
-                Comments
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="details" className="space-y-6 mt-6">
-              <div>
-                <h3 className="text-sm font-semibold mb-4">Client Details</h3>
-
-                <div className="space-y-4">
-                  {/* Domains */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
+                      <path
+                        d="M8 12L8 4M4 8L8 4L12 8"
                         stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <span>Domains</span>
-                    </div>
-                    <Link
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  <div className="flex-1">
+                    <p className="text-sm">{activity.action}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{activity.timestamp}</p>
+                  </div>
+                </div>
+              ))}
+
+              <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                <span>View all</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Sidebar - Client Details */}
+        <div className="w-80 border-l bg-muted/5 overflow-auto">
+          <div className="p-6">
+            <div className="mb-6 flex items-center gap-4 border-b">
+              <button className="border-b-2 border-foreground pb-3 text-sm font-medium">
+                Details
+              </button>
+              <button className="pb-3 text-sm text-muted-foreground hover:text-foreground">
+                Comments
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <h3 className="text-sm font-semibold">Client Details</h3>
+
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <Globe className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">Domains</p>
+                    <a
                       href={`https://${client.domain}`}
                       target="_blank"
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-[#3B82F6] hover:underline"
                     >
                       {client.domain}
-                    </Link>
+                    </a>
                   </div>
+                </div>
 
-                  {/* Name */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <span>Name</span>
-                    </div>
-                    <p className="text-sm">{client.name}</p>
+                <div className="flex items-start gap-3">
+                  <Building2 className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">Name</p>
+                    <p className="text-sm font-medium">{client.name}</p>
                   </div>
+                </div>
 
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 6h16M4 12h16M4 18h7"
-                        />
-                      </svg>
-                      <span>Description</span>
-                    </div>
-                    <p className="text-sm">{client.description}</p>
+                <div className="flex items-start gap-3">
+                  <FileText className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">Description</p>
+                    <p className="text-sm font-medium">{client.description}</p>
                   </div>
+                </div>
 
-                  {/* Team */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
-                      <span>Team</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start text-muted-foreground font-normal"
-                    >
-                      Set a value...
-                    </Button>
+                <div className="flex items-start gap-3">
+                  <Users className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-1">Team</p>
+                    <p className="text-sm text-muted-foreground">Set a value...</p>
                   </div>
+                </div>
 
-                  {/* Categories */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-                          />
-                        </svg>
-                        <span>Categories</span>
-                      </div>
-                      <Button variant="link" size="sm" className="h-auto p-0 text-xs">
-                        Show all values →
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5">
-                      <Badge className="bg-pink-500/90 hover:bg-pink-500 text-white border-0 text-xs px-2 py-0.5">
+                <div className="flex items-start gap-3">
+                  <Tag className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground mb-2">Categories</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge className="bg-[#8B5CF6]/20 text-[#8B5CF6] hover:bg-[#8B5CF6]/30 border-0">
                         Publishing
                       </Badge>
-                      <Badge className="bg-green-500/90 hover:bg-green-500 text-white border-0 text-xs px-2 py-0.5">
+                      <Badge className="bg-[#3B82F6]/20 text-[#3B82F6] hover:bg-[#3B82F6]/30 border-0">
                         SAAS
                       </Badge>
-                      <Badge className="bg-yellow-500/90 hover:bg-yellow-500 text-white border-0 text-xs px-2 py-0.5">
+                      <Badge className="bg-[#F59E0B]/20 text-[#F59E0B] hover:bg-[#F59E0B]/30 border-0">
                         Information T
                       </Badge>
-                      <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                      <Badge className="bg-muted text-muted-foreground hover:bg-muted/80 border-0">
                         +3
                       </Badge>
                     </div>
                   </div>
                 </div>
-              </div>
-            </TabsContent>
 
-            <TabsContent value="comments" className="mt-6">
-              <p className="text-sm text-muted-foreground">No comments yet.</p>
-            </TabsContent>
-          </Tabs>
+                <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                  <span>Show all values</span>
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
