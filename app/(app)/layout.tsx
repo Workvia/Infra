@@ -2,6 +2,9 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import Link from "next/link";
 
 export default function AppLayout({
   children,
@@ -17,9 +20,17 @@ export default function AppLayout({
             <SidebarTrigger />
             <Separator orientation="vertical" className="h-6" />
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/auth/signout">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Link>
+            </Button>
+            <ThemeToggle />
+          </div>
         </header>
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-2">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

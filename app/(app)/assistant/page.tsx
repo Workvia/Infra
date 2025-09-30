@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Search, Globe, Grid3x3 } from "lucide-react";
+import { Search, Globe, Grid3x3, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -38,28 +38,7 @@ type Message = {
 };
 
 // Mock previous chats
-const previousChats = [
-  "1RM estimation",
-  "Insurance terms with open",
-  "iPad for business use",
-  "Business card layout",
-  "Best business card options",
-  "Image face swap",
-  "Name suggestions for Shaka...",
-  "Create vibrant map",
-  "Expand image size",
-  "Pull up GPay on Samsung",
-  "Add CNAME to Vercel",
-  "AI Musician PRD",
-  "Improving rough draft",
-  "Top 10 CRM products",
-  "Backyard remodel design",
-  "Remove structure and BBQ",
-  "Image creation request",
-  "Image creation request",
-  "VC fundraising cheat sheet",
-  "Image modification request",
-];
+const previousChats: string[] = [];
 
 // Mock clients for source selection
 const clients = [
@@ -91,35 +70,65 @@ export default function AssistantPage() {
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
+    // Create assistant message placeholder
+    const assistantMessageId = (Date.now() + 1).toString();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: [...messages, userMessage].map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+          })),
           clientId: selectedClients[0],
           sources: { webSearch, appsIntegrations },
           files: message.files,
         }),
       });
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error("Failed to get response");
+      }
 
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: data.message || data.response || "I received your message.",
-      };
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedContent = "";
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          accumulatedContent += chunk;
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: accumulatedContent }
+                : msg
+            )
+          );
+        }
+      }
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? { ...msg, content: "Sorry, I encountered an error. Please try again." }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
     }
@@ -130,9 +139,9 @@ export default function AssistantPage() {
   );
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Chat History Sidebar */}
-      <div className="w-64 border-r flex flex-col bg-muted/5">
+      <div className="w-64 border-r flex flex-col bg-muted/5 h-full">
         <div className="p-4 border-b">
           <Button
             className="w-full justify-start gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
@@ -166,58 +175,43 @@ export default function AssistantPage() {
         </div>
 
         <div className="flex-1 overflow-auto">
-          <div className="p-2">
-            <div className="px-3 py-2">
-              <h3 className="text-xs font-medium text-muted-foreground">Previous</h3>
+          {previousChats.length > 0 ? (
+            <div className="p-2">
+              <div className="px-3 py-2">
+                <h3 className="text-xs font-medium text-muted-foreground">Previous</h3>
+              </div>
+              <div className="space-y-0.5">
+                {previousChats.map((chat, index) => (
+                  <button
+                    key={index}
+                    className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors truncate"
+                  >
+                    {chat}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="space-y-0.5">
-              {previousChats.map((chat, index) => (
-                <button
-                  key={index}
-                  className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors truncate"
-                >
-                  {chat}
-                </button>
-              ))}
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Search className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No chats found</h3>
+              <p className="text-sm text-muted-foreground">
+                Looks like you haven't started a chat yet.
+              </p>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {messages.length === 0 ? (
-          /* Empty State */
-          <div className="flex-1 flex items-center justify-center p-8">
-            <div className="text-center space-y-6 max-w-md">
-              <div className="flex justify-center">
-                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-                  <svg
-                    className="h-10 w-10 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <h2 className="text-2xl font-semibold mb-2">No chats found</h2>
-                <p className="text-muted-foreground">
-                  Looks like you haven't started a chat yet.
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        {messages.length > 0 && (
           /* Chat Messages */
-          <ScrollArea className="flex-1 p-6">
+          <ScrollArea className="flex-1 p-6 pb-32">
             <div className="max-w-3xl mx-auto space-y-6">
               {messages.map((message) => (
                 <div
@@ -276,8 +270,8 @@ export default function AssistantPage() {
         )}
 
         {/* Input Area */}
-        <div className="border-t bg-background">
-          <div className="max-w-3xl mx-auto p-4">
+        <div className="absolute bottom-0 left-0 right-0 border-t bg-background">
+          <div className="max-w-3xl mx-auto px-6 py-4">
             <PromptInput onSubmit={handleSubmit} accept="image/*" multiple>
               <PromptInputBody>
                 <PromptInputAttachments>
@@ -286,20 +280,15 @@ export default function AssistantPage() {
                 <PromptInputTextarea placeholder="Ask anything" />
                 <PromptInputToolbar>
                   <PromptInputTools>
-                    <PromptInputActionMenu>
-                      <PromptInputActionMenuTrigger />
-                      <PromptInputActionMenuContent>
-                        <PromptInputActionMenuItem
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                            input?.click();
-                          }}
-                        >
-                          Attach files
-                        </PromptInputActionMenuItem>
-                      </PromptInputActionMenuContent>
-                    </PromptInputActionMenu>
+                    <PromptInputButton
+                      onClick={() => {
+                        const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+                        input?.click();
+                      }}
+                    >
+                      <Paperclip className="size-4" />
+                      Attach
+                    </PromptInputButton>
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
