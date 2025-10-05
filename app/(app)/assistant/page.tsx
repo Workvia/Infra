@@ -270,7 +270,7 @@ export default function AssistantPage() {
         )}
 
         {/* Input Area */}
-        <div className="absolute bottom-0 left-0 right-0 border-t bg-background">
+        <div className="absolute bottom-0 left-0 right-0 bg-background">
           <div className="max-w-3xl mx-auto px-6 py-4">
             <PromptInput onSubmit={handleSubmit} accept="image/*" multiple>
               <PromptInputBody>
